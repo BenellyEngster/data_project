@@ -12,7 +12,6 @@ Para manter o código limpo e com separação clara de responsabilidades, o repo
 
 ```text
 data_project/
-│
 ├── .venv/                   # Ambiente Virtual isolado do Python
 ├── data/
 │   └── homicidios-e-feminicidios.csv  # Base de dados de exemplo para validação de estrutura
