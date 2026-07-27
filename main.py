@@ -33,6 +33,7 @@ try:
         print("->", article.text)
 
 finally:
-    # Wait 5 seconds to visually observe the browser, then close it and end the session
+    # Wait 5 seconds to visually observe the browser, then close it and end the session.
     time.sleep(5)
     driver.quit()
+
