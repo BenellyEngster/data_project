@@ -1,63 +1,62 @@
-import time
-import pandas as pd
 from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.support.wait import WebDriverWait
+import time
+import sqlite3
 
-# 1. Read and initially display the CSV dataset
-try:
-    df = pd.read_csv(
-        "data/homicidios-e-feminicidios.csv",
-        encoding="latin-1",
-        sep=";"
+# Create (or open) a database file in your project folder
+connection = sqlite3.connect("tjpr_data.db")
+cursor = connection.cursor()
+
+# Create the table where raw data will be stored
+cursor.execute("""
+    CREATE TABLE IF NOT EXISTS raw_lawsuits (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        full_text TEXT
     )
-    print("--- First rows of the CSV file ---")
-    print(df.head())
-    print("-" * 40)
-except Exception as e:
-    print(f"Warning: Could not read the CSV file. Error: {e}")
-    print("-" * 40)
+""")
+connection.commit()
 
-# 2. Browser configuration and initialization using Options
-options = Options()
-# If you want to run the browser in the background (headless mode) in the future, just uncomment the line below:
-# options.add_argument("--headless")
+# 1. Automatically open Google Chrome
+driver = webdriver.Chrome()
 
-driver = webdriver.Chrome(options=options)
+# 2. Access the TJPR jurisprudence portal
+driver.get("https://portal.tjpr.jus.br/jurisprudencia/")
+print("Title of the open page:", driver.title)
 
-# 3. Access the website and automate the search (Web Scraping)
-driver.get("https://www.python.org/")
-print("Opened page title:", driver.title)
+# 3. Locate the search bar by the correct ID we discovered
+search = driver.find_element(By.ID, "criterioPesquisa")
 
-# Find the search bar by its NAME attribute
-search = driver.find_element(By.NAME, "q")
+# 4. Type your master's thesis keyword
+search.send_keys("feminicidio")
+time.sleep(1)  # Short pause to ensure input is filled
 
-# Type the word "loops" into the search box and press ENTER on the keyboard
-search.send_keys("loops")
-search.send_keys(Keys.RETURN)
+# 5. Locate the main search button and click it
+botao_pesquisar = driver.find_element(By.CLASS_NAME, "btn-icone-pesquisar")
+botao_pesquisar.click()
+print("- Femicide research successfully sent to the TJPR")
 
-try:
-    # Explicit wait: wait up to 15 seconds (increased to prevent Timeout errors) until the results container is present in the DOM
-    main = WebDriverWait(driver, 15).until(
-        EC.presence_of_element_located((By.CLASS_NAME, "list-recent-events"))
-    )
-    
-    # Find all list items (<li> tags) inside the results container
-    articles = main.find_elements(By.TAG_NAME, "li")
-    
-    print("\n--- Results found on the Web ---")
-    for article in articles:
-        print("->", article.text)
+time.sleep(3)
 
-finally:
-    # Wait 5 seconds to visually observe the browser behavior
-    time.sleep(5)
-    
-    # Safety shield: Try to close the browser without freezing the terminal if the connection dropped or timed out
-    try:
-        driver.quit()
-    except Exception as e:
-        print("The browser was already closed or did not respond to the shutdown command.")
+lawsuits = driver.find_elements(By.CLASS_NAME, "juris-tabela-dados")
+
+print(f"Success, I found  {len(lawsuits)} visible cases on the first page")
+
+for lawsuit in lawsuits:
+    raw_text = lawsuit.text
+
+    # Save this text into the table of our .db file
+    cursor.execute("INSERT INTO raw_lawsuits (full_text) VALUES (?)", (raw_text,))
+
+# Commit the saved data
+connection.commit()
+print("- All raw processes have been saved to the database")
+
+# 6. Wait 6 seconds for the results page to load on screen
+
+print("- Page title after the search:", driver.title)
+
+# 7. Safely close the session
+driver.quit()
+connection.close()
+print("- Automation completed without errors")
