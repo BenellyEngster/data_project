@@ -32,8 +32,8 @@ search.send_keys("feminicidio")
 time.sleep(1)  # Short pause to ensure input is filled
 
 # 5. Locate the main search button and click it
-botao_pesquisar = driver.find_element(By.CLASS_NAME, "btn-icone-pesquisar")
-botao_pesquisar.click()
+search_button = driver.find_element(By.CLASS_NAME, "btn-icone-pesquisar")
+search_button.click()
 print("- Femicide research successfully sent to the TJPR")
 
 time.sleep(3)
@@ -46,14 +46,15 @@ for lawsuit in lawsuits:
     raw_text = lawsuit.text
 
     # Save this text into the table of our .db file
-    cursor.execute("INSERT INTO raw_lawsuits (full_text) VALUES (?)", (raw_text,))
+    cursor.execute(
+        "INSERT INTO raw_lawsuits (full_text) VALUES (?)", (raw_text,)
+    )
 
 # Commit the saved data
 connection.commit()
 print("- All raw processes have been saved to the database")
 
 # 6. Wait 6 seconds for the results page to load on screen
-
 print("- Page title after the search:", driver.title)
 
 # 7. Safely close the session
