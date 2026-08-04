@@ -15,8 +15,8 @@ data_project/
 ├── .venv/                   # Ambiente Virtual isolado do Python
 ├── data/
 │   └── homicidios-e-feminicidios.csv  # Base de dados de exemplo para validação de estrutura
-├── main.py                  # Script principal de execução (Orquestrador)
+├── main.py                  # Script principal de execução 
 ├── scraper.py               # Lógica de raspagem web e automação do navegador (Selenium)
-├── treatment.py             # Lógica de limpeza e transformação dos dados (Pandas)
+├── treatment.py             # Lógica de limpeza e transformação dos dados (Pandas e Regex)
 ├── database.py              # Lógica de conexão e salvamento em banco de dados
 └── README.md                # Documentação do projeto
